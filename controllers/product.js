@@ -4,30 +4,12 @@ module.exports = {
   createProduct: async (req, res) => {
     try {
       const { product_name, price, count, catId } = req.body
-      const category = await db.category.findUnique({
-        where: {
-          categoryId: catId,
-        },
-      })
-
-      if (!category) {
-        return res.status(400).json({ error: "Category not found." })
-      }
-
       const createdProduct = await db.product.create({
         data: {
           product_name,
           price,
           count,
           catId,
-          category: {
-            connect: {
-              categoryId: catId,
-            },
-            select: {
-              title: true,
-            },
-          },
         },
       })
 
@@ -37,7 +19,6 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" })
     }
   },
-
   productList: async (req, res) => {
     const { page, count } = req.query
     if (Number(page) === 1) {
@@ -88,5 +69,12 @@ module.exports = {
       },
     })
     res.send(newProduct).status(200)
+  },
+  deleteProduct: async (req, res) => {
+    const { productId } = req.body
+    await db.product.deleteMany({
+      where: { productId: productId },
+    })
+    res.json({ message: "Product successfully deleted!" }).status(204)
   },
 }

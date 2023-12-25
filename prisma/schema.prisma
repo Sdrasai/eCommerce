@@ -7,16 +7,6 @@ datasource db {
         url      = env("DB_URL")
 }
 
-model Product {
-        productId    String   @id @default(uuid())
-        product_name String
-        price        String
-        count        Int
-        catId        String
-        createdAt    DateTime @default(now())
-        updatedAt    DateTime @updatedAt
-}
-
 model Category {
         categoryId String     @id @default(uuid())
         title      String
@@ -25,4 +15,16 @@ model Category {
         childs     Category[] @relation("parents")
         createdAt  DateTime   @default(now())
         updatedAt  DateTime   @updatedAt
+        Product    Product[]
+}
+
+model Product {
+        productId    String   @id @default(uuid())
+        product_name String
+        price        String
+        count        Int
+        catId        String
+        category     Category @relation(fields: [catId], references: [categoryId])
+        createdAt    DateTime @default(now())
+        updatedAt    DateTime @updatedAt
 }

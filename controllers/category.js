@@ -18,6 +18,14 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" })
     }
   },
+  categoryList: async (req, res) => {
+    // const { title, parentId } = req.body
+    const categories = await db.category.findMany({
+      select: { title: true, parentId: true, categoryId: true },
+    })
+    res.send(categories).status(200)
+  },
+
   updateCategory: async (req, res) => {
     const { title, parentId } = req.body
     const { categoryId } = req.params
@@ -29,5 +37,12 @@ module.exports = {
       },
     })
     res.send(newCategory).status(200)
+  },
+  deleteCategory: async (req, res) => {
+    const { categoryId } = req.body
+    await db.category.deleteMany({
+      where: { categoryId: categoryId },
+    })
+    res.json({ message: "Category successfully deleted!" }).status(204)
   },
 }
