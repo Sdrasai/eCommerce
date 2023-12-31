@@ -7,24 +7,143 @@ datasource db {
         url      = env("DB_URL")
 }
 
-model Category {
-        categoryId String     @id @default(uuid())
-        title      String
-        parent     Category?  @relation("parents", fields: [parentId], references: [categoryId])
-        parentId   String?
-        childs     Category[] @relation("parents")
-        createdAt  DateTime   @default(now())
-        updatedAt  DateTime   @updatedAt
-        Product    Product[]
+// model Category {
+//         categoryId String     @id @default(uuid())
+//         title      String
+//         parent     Category?  @relation("parents", fields: [parentId], references: [categoryId])
+//         parentId   String?
+//         childs     Category[] @relation("parents")
+//         createdAt  DateTime   @default(now())
+//         updatedAt  DateTime   @updatedAt
+//         Product    Product[]
+// }
+
+// model Product {
+//         productId    String   @id @default(uuid())
+//         product_name String
+//         price        String
+//         count        Int
+//         catId        String
+//         category     Category @relation(fields: [catId], references: [categoryId], onDelete: Cascade)
+//         createdAt    DateTime @default(now())
+//         updatedAt    DateTime @updatedAt
+// }
+
+enum Role {
+        Owner
+        Admin
+        User
+}
+
+enum Rating {
+        None
+        One
+        Two
+        Three
+        Four
+        Five
+}
+
+enum OrderStatus {
+        FailedToPay
+        Paying
+        Paid
+}
+
+model User {
+        userId    String    @id @default(uuid())
+        userName  String    @unique
+        password  String
+        email     String?
+        age       Int?
+        role      Role      @default(User)
+        createdAt DateTime  @default(now())
+        updatedAt DateTime  @updatedAt
+        Comment   Comment[]
+        Cart      Cart?
+        Order     Order[]
+        Token     Token[]
 }
 
 model Product {
-        productId    String   @id @default(uuid())
-        product_name String
-        price        String
-        count        Int
-        catId        String
-        category     Category @relation(fields: [catId], references: [categoryId])
-        createdAt    DateTime @default(now())
-        updatedAt    DateTime @updatedAt
+        productId      String           @id @default(uuid())
+        product_name   String
+        price          String
+        count          Int
+        attributes     Json?
+        createdAt      DateTime         @default(now())
+        updatedAt      DateTime         @updatedAt
+        Comment        Comment[]
+        CategoryId     String?
+        Category       Category?        @relation(fields: [CategoryId], references: [categoryId])
+        ProductToCart  ProductToCart[]
+        ProductToOrder ProductToOrder[]
+}
+
+model Comment {
+        commentId String   @id @default(uuid())
+        message   String
+        rating    Rating   @default(None)
+        createdAt DateTime @default(now())
+        updatedAt DateTime @updatedAt
+        byUser    String
+        user      User     @relation(fields: [byUser], references: [userId])
+        onProduct String
+        product   Product  @relation(fields: [onProduct], references: [productId])
+}
+
+model Category {
+        categoryId String     @id @default(uuid())
+        title      String
+        createdAt  DateTime   @default(now())
+        updatedAt  DateTime   @updatedAt
+        parentId   String?
+        parent     Category?  @relation("CategoryParent", fields: [parentId], references: [categoryId])
+        childrens  Category[] @relation("CategoryParent")
+        Product    Product[]
+}
+
+model Cart {
+        cartId  String @id @default(uuid())
+        forUser String @unique
+        user    User   @relation(fields: [forUser], references: [userId])
+
+        ProductToCart ProductToCart[]
+}
+
+model ProductToCart {
+        cartId    String
+        cart      Cart    @relation(fields: [cartId], references: [cartId])
+        productId String
+        product   Product @relation(fields: [productId], references: [productId])
+
+        @@id([cartId, productId])
+}
+
+model Order {
+        orderId        String           @id @default(uuid())
+        status         OrderStatus      @default(Paying)
+        totalPrice     String
+        createdAt      DateTime         @default(now())
+        updatedAt      DateTime         @updatedAt
+        byUser         String
+        user           User             @relation(fields: [byUser], references: [userId])
+        ProductToOrder ProductToOrder[]
+}
+
+model ProductToOrder {
+        productId String
+        product   Product @relation(fields: [productId], references: [productId])
+        orderId   String
+        order     Order   @relation(fields: [orderId], references: [orderId])
+
+        @@id([productId, orderId])
+}
+
+model Token {
+        tokenId    String   @id @default(uuid())
+        forUser    String
+        user       User     @relation(fields: [forUser], references: [userName])
+        token      String
+        loggedInAt DateTime @default(now())
 }

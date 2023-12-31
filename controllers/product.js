@@ -3,13 +3,13 @@ const db = require("../db")
 module.exports = {
   createProduct: async (req, res) => {
     try {
-      const { product_name, price, count, catId } = req.body
+      const { product_name, price, count, CategoryId } = req.body
       const createdProduct = await db.product.create({
         data: {
           product_name,
           price,
           count,
-          catId,
+          CategoryId,
         },
       })
 
@@ -20,61 +20,82 @@ module.exports = {
     }
   },
   productList: async (req, res) => {
-    const { page, count } = req.query
-    if (Number(page) === 1) {
-      res
-        .send(
-          await db.product.findMany({
-            skip: 0,
-            take: Number(count),
-            select: { productId: true, product_name: true, price: true },
-          })
-        )
-        .status(200)
-    } else {
-      res
-        .send(
-          await db.product.findMany({
-            skip: Number(page) * Number(count),
-            take: Number(count),
-          })
-        )
-        .status(200)
+    try {
+      const { page, count } = req.query
+      if (Number(page) === 1) {
+        res
+          .send(
+            await db.product.findMany({
+              skip: 0,
+              take: Number(count),
+              select: { productId: true, product_name: true, price: true },
+            })
+          )
+          .status(200)
+      } else {
+        res
+          .send(
+            await db.product.findMany({
+              skip: Number(page) * Number(count),
+              take: Number(count),
+            })
+          )
+          .status(200)
+      }
+    } catch (error) {
+      console.error("Product List Error:", error)
+      res.status(500).json({ error: "Internal Server Error" })
     }
   },
   productDetails: async (req, res) => {
-    const { productId } = req.params
-    const product = await db.product.findUnique({
-      where: {
-        productId: productId,
-      },
-    })
-    res.send(product).status(200)
+    try {
+      const { productId } = req.params
+      const product = await db.product.findUnique({
+        where: {
+          productId: productId,
+        },
+      })
+      res.send(product).status(200)
+    } catch (error) {
+      console.error("Product Details Error:", error)
+      res.status(500).json({ error: "Internal Server Error" })
+    }
   },
   updateProduct: async (req, res) => {
-    const { product_name, catId, price, count, category_title } = req.body
-    const { productId } = req.params
+    try {
+      const { product_name, CategoryId, price, count, category_title } =
+        req.body
+      const { productId } = req.params
 
-    const newProduct = await db.product.update({
-      where: {
-        productId: productId,
-      },
-      data: {
-        product_name,
-        catId,
-        category_title,
-        productId,
-        price,
-        count,
-      },
-    })
-    res.send(newProduct).status(200)
+      const newProduct = await db.product.update({
+        where: {
+          productId: productId,
+        },
+        data: {
+          product_name,
+          CategoryId,
+          category_title,
+          productId,
+          price,
+          count,
+        },
+      })
+      res.send(newProduct).status(200)
+    } catch (error) {
+      console.error("Update Product Error:", error)
+      res.status(500).json({ error: "Internal Server Error" })
+    }
   },
   deleteProduct: async (req, res) => {
-    const { productId } = req.body
-    await db.product.deleteMany({
-      where: { productId: productId },
-    })
-    res.json({ message: "Product successfully deleted!" }).status(204)
+    try {
+      const { productId } = req.body
+      await db.product.deleteMany({
+        where: { productId: productId },
+      })
+      res.json({ message: "Product successfully deleted!" }).status(204)
+    } catch (error) {
+      console.error("Delete Product Error:", error)
+      res.status(500).json({ error: "Internal Server Error" })
+    }
   },
 }
