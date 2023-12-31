@@ -1,21 +1,49 @@
 const db = require("../db")
 
+const bc = require("bcrypt")
+const jwt = require("jsonwebtoken")
+
 module.exports = {
-  createUser: async (req, res) => {
+  register: async (req, res) => {
     try {
       const { userName, password, email, age } = req.body
+      const salt = await bc.genSalt(10)
+      const hashedPassword = await bc.hash(password, salt)
+
       const user = await db.user.create({
-        data: {
-          userName,
-          password,
-          email,
-          age,
-        },
+        data: { userName, password: hashedPassword, email, age },
       })
-      res.status(201).json(user)
+      return res
+        .json({
+          message: `user ${user.userName} registerd`,
+          userId: user.userId,
+        })
+        .status(201)
     } catch (error) {
-      console.error("Error Creating User:", error)
-      res.status(500).json({ error: "Internal Server Error" })
+      console.log("User Register Error: ", error)
+      res.json({ message: "Internal Server Error" }).status(500)
+    }
+  },
+  login: async (req, res) => {
+    try {
+      const { userName, password } = req.body
+      const user = await db.user.findFirst({ where: { userName } })
+      if (!user) {
+        throw new Error("Username or password is not correct!")
+      }
+
+      const verified = await bc.compare(password, user.password)
+      if (!verified) {
+        throw new Error("Username or password is not correct!")
+      }
+      const token = await jwt.sign(
+        { userName: user.userName },
+        process.env.SECRET_KEY
+      )
+      return res.json({ token })
+    } catch (error) {
+      console.log("User Login Error: ", error)
+      res.json({ message: "Internal Server Error" }).status(500)
     }
   },
   userList: async (req, res) => {
@@ -43,16 +71,18 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" })
     }
   },
-  userUpdate: async (req, res) => {
+  updateUser: async (req, res) => {
     try {
       const { userId } = req.params
       console.log(userId)
       const { userName, password, email, age } = req.body
+      const salt = await bc.genSalt(10)
+      const hashedPassword = await bc.hash(password, salt)
       const newUser = await db.user.update({
         where: { userId: userId },
         data: {
           userName,
-          password,
+          password: hashedPassword,
           email,
           age,
         },
