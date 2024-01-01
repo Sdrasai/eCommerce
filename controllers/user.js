@@ -4,7 +4,7 @@ const bc = require("bcrypt")
 const jwt = require("jsonwebtoken")
 
 module.exports = {
-  register: async (req, res) => {
+  register: async (req, res, next) => {
     try {
       const { userName, password, email, age } = req.body
       const salt = await bc.genSalt(10)
@@ -20,8 +20,9 @@ module.exports = {
         })
         .status(201)
     } catch (error) {
-      console.log("User Register Error: ", error)
-      res.json({ message: "Internal Server Error" }).status(500)
+      // console.log("User Register Error: ", error)
+      // res.json({ message: "Internal Server Error" }).status(500)
+      next(error)
     }
   },
   login: async (req, res) => {

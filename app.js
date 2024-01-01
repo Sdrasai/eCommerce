@@ -1,18 +1,19 @@
 const express = require("express")
 require("dotenv").config()
-// const prisma = require("./db")
-const router = require("./routes")
+const { errorHandler } = require("./middleware/errorHandler")
+const { userExist } = require("./middleware/userExist")
 
-// const { Client } = require("pg")
-// const client = new Client()
+const router = require("./routes")
 
 const app = express()
 app.use(express.json())
 
 app.use("/api", router)
 
-const PORT = process.env.PORT
+app.use(userExist)
+app.use(errorHandler)
 
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`server is running on ${PORT}`)
 })

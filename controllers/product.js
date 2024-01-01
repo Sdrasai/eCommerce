@@ -1,7 +1,7 @@
 const db = require("../db")
 
 module.exports = {
-  createProduct: async (req, res) => {
+  createProduct: async (req, res, next) => {
     try {
       const { product_name, price, count, CategoryId } = req.body
       const createdProduct = await db.product.create({
@@ -15,8 +15,9 @@ module.exports = {
 
       res.status(201).json(createdProduct)
     } catch (error) {
-      console.error("Error creating product:", error)
-      res.status(500).json({ error: "Internal Server Error" })
+      // console.error("Error creating product:", error)
+      // res.status(500).json({ error: "Internal Server Error" })
+      next(error)
     }
   },
   productList: async (req, res) => {
@@ -47,7 +48,7 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" })
     }
   },
-  productDetails: async (req, res) => {
+  productDetails: async (req, res, next) => {
     try {
       const { productId } = req.params
       const product = await db.product.findUnique({
@@ -57,8 +58,9 @@ module.exports = {
       })
       res.send(product).status(200)
     } catch (error) {
-      console.error("Product Details Error:", error)
-      res.status(500).json({ error: "Internal Server Error" })
+      // console.error("Product Details Error:", error)
+      // res.status(500).json({ error: "Internal Server Error" })
+      next(error)
     }
   },
   updateProduct: async (req, res) => {
