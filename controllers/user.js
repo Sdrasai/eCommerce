@@ -1,5 +1,5 @@
 const db = require("../db")
-
+const { createToken } = require("../utils")
 const bc = require("bcrypt")
 const jwt = require("jsonwebtoken")
 
@@ -25,7 +25,7 @@ module.exports = {
       next(error)
     }
   },
-  login: async (req, res) => {
+  login: async (req, res, next) => {
     try {
       const { userName, password } = req.body
       const user = await db.user.findFirst({ where: { userName } })
@@ -37,9 +37,12 @@ module.exports = {
       if (!verified) {
         throw new Error("Username or password is not correct!")
       }
-      const token = await jwt.sign(
-        { userName: user.userName },
-        process.env.SECRET_KEY
+      const token = await createToken(
+        { userName },
+        process.env.SECRET_KEY,
+        process.env.ACCESS_TOKEN_TIME,
+        process.env.REFRESH_TOKEN_TIME,
+        userName
       )
       return res.json({ token })
     } catch (error) {

@@ -1,7 +1,7 @@
 const db = require("../db")
 
 module.exports = {
-  createCategory: async (req, res) => {
+  createCategory: async (req, res, next) => {
     try {
       const { title, parentId } = req.body
       const createdCategory = await db.category.create({
@@ -13,8 +13,9 @@ module.exports = {
 
       res.status(201).json(createdCategory)
     } catch (error) {
-      console.error("Error creating category:", error)
-      res.status(500).json({ error: "Internal Server Error" })
+      // console.error("Error creating category:", error)
+      // res.status(500).json({ error: "Internal Server Error" })
+      next(error)
     }
   },
   categoryList: async (req, res) => {
