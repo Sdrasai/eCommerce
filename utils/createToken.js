@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken")
+const { user } = require("../db")
 const db = require("../db")
 
 module.exports = async function createToken(
@@ -15,14 +16,25 @@ module.exports = async function createToken(
     const refreshToken = jwt.sign(payload, secretKey, {
       expiresIn: refreshExpire,
     })
+
     if (userName) {
-      await db.token.create({
-        data: {
-          userName: userName,
-          token: refreshToken,
-        },
-      })
+      const user = await db.user.findUnique({ where: { userName } })
+
+      if (user) {
+        await db.token.create({
+          data: {
+            user: userName,
+            token: refreshToken,
+            user: {
+              connect: {
+                userName: user.userName,
+              },
+            },
+          },
+        })
+      }
     }
+
     return { refreshToken, accessToken }
   } catch (error) {
     throw new Error(error.message)

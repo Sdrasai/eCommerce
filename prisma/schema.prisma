@@ -142,8 +142,8 @@ model ProductToOrder {
 
 model Token {
         tokenId    String   @id @default(uuid())
-        forUser    String
-        user       User     @relation(fields: [forUser], references: [userName])
+        userId     String
+        user       User     @relation(fields: [userId], references: [userName], onDelete: Cascade)
         token      String
         loggedInAt DateTime @default(now())
 }
