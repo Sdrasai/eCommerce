@@ -6,8 +6,8 @@ const { authentication } = require("../middleware")
 router.post("/register", userController.register)
 router.post("/login", userController.login)
 router.get("/userList", authentication, userController.userList)
-router.get("/userDetails/:userId", userController.userDetails)
-router.put("/updateUser/:userId", userController.updateUser)
-router.delete("/deleteUser", userController.deleteUser)
+router.get("/userDetails/:userId", authentication, userController.userDetails)
+router.put("/updateUser/:userId", authentication, userController.updateUser)
+router.delete("/deleteUser", authentication, userController.deleteUser)
 
 module.exports = router

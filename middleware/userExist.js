@@ -9,6 +9,9 @@ module.exports = {
       const errMessage = prismaErrMap.get(err.code)
       const error = new CustomError(errMessage, 400)
       next(error)
+    } else {
+      const defultError = new CustomError(err.message, 400)
+      next(defultError)
     }
   },
 }

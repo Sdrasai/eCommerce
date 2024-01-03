@@ -20,8 +20,6 @@ module.exports = {
         })
         .status(201)
     } catch (error) {
-      // console.log("User Register Error: ", error)
-      // res.json({ message: "Internal Server Error" }).status(500)
       next(error)
     }
   },

@@ -5,8 +5,8 @@ const db = require("../db")
 module.exports = async function createToken(
   payload,
   secretKey,
-  refreshExpire,
   accessExpire,
+  refreshExpire,
   userName = null
 ) {
   try {
