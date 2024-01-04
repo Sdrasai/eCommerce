@@ -1,21 +1,24 @@
 const db = require("../db")
-const { createToken } = require("../utils")
+const { createToken, hashPassword, comparePassword } = require("../utils")
 const bc = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const UserService = require("../services/user.service")
+const userService = new UserService()
 
 module.exports = {
   register: async (req, res, next) => {
     try {
       const { userName, password, email, age } = req.body
-      const salt = await bc.genSalt(10)
-      const hashedPassword = await bc.hash(password, salt)
-
-      const user = await db.user.create({
-        data: { userName, password: hashedPassword, email, age },
-      })
-      return res
+      const hashedPassword = await hashPassword(password)
+      const user = await userService.createUser(
+        userName,
+        hashedPassword,
+        email,
+        age
+      )
+      res
         .json({
-          message: `user ${user.userName} registerd`,
+          message: `user ${userName} registerd`,
           userId: user.userId,
         })
         .status(201)
@@ -26,12 +29,11 @@ module.exports = {
   login: async (req, res, next) => {
     try {
       const { userName, password } = req.body
-      const user = await db.user.findFirst({ where: { userName } })
+      const user = await userService.checkingUser(userName, password)
       if (!user) {
         throw new Error("Username or password is not correct!")
       }
-
-      const verified = await bc.compare(password, user.password)
+      const verified = await comparePassword(password, user.password)
       if (!verified) {
         throw new Error("Username or password is not correct!")
       }
@@ -50,9 +52,7 @@ module.exports = {
   },
   userList: async (req, res) => {
     try {
-      const users = await db.user.findMany({
-        select: { userId: true, userName: true, email: true },
-      })
+      const users = await userService.findUsers()
       res.status(200).json(users)
     } catch (error) {
       console.error("User List Error:", error)
@@ -62,11 +62,7 @@ module.exports = {
   userDetails: async (req, res) => {
     try {
       const { userId } = req.params
-      const user = await db.user.findUnique({
-        where: {
-          userId: userId,
-        },
-      })
+      const user = await userService.findUserById(userId)
       res.status(200).json(user)
     } catch (error) {
       console.error("User Details Error:", error)
@@ -76,7 +72,6 @@ module.exports = {
   updateUser: async (req, res) => {
     try {
       const { userId } = req.params
-      console.log(userId)
       const { userName, password, email, age } = req.body
       const salt = await bc.genSalt(10)
       const hashedPassword = await bc.hash(password, salt)

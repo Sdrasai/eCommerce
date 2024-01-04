@@ -2,7 +2,6 @@ const express = require("express")
 require("dotenv").config()
 const { errorHandler } = require("./middleware/errorHandler")
 const { userExist } = require("./middleware/userExist")
-// const { authentication } = require("./middleware")
 
 const router = require("./routes")
 
@@ -12,7 +11,6 @@ app.use(express.json())
 app.use("/api", router)
 
 app.use(userExist)
-// app.use(authentication)
 
 app.use(errorHandler)
 
